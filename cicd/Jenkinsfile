@@ -14,7 +14,7 @@ pipeline {
         GIT_CRED = 'Github-creds'
         GIT_PROJECT_URL = 'https://github.com/afiyog/pet-clinic-java.git'
         SONAQUBE_CRED = 'sonar-cred'
-        SONAQUBE_INSTALLATION = 'sonar-server'
+        SONAQUBE_INSTALLATION = 'sonar'
         APP_NAME = 'pet-clinic-java'
         SCANNER_HOME = tool 'sonar-env'
     }
