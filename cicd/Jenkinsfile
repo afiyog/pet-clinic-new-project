@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'M2_HOME'  // /opt/maven
+        jdk 'JAVA_HOME'
+    }
+
+    environment {
+        AWS_REGION = 'us-east-1'
+        IMAGE_ECR_REPO = '737465025187.dkr.ecr.us-east-1.amazonaws.com/jenkins-ci'
+        ECR_REPO = '737465025187.dkr.ecr.us-east-1.amazonaws.com'
+        BRANCH_NAME = 'main'
+        GIT_CRED = 'Github-creds'
+        GIT_PROJECT_URL = 'https://github.com/afiyog/pet-clinic-java.git'
+        SONAQUBE_CRED = 'sonar-cred'
+        SONAQUBE_INSTALLATION = 'sonar-server'
+        APP_NAME = 'pet-clinic-java'
+        SCANNER_HOME = tool 'sonar-env'
+    }
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: "${BRANCH_NAME}", 
+                    credentialsId: "${GIT_CRED}", 
+                    url: "${GIT_PROJECT_URL}"
+            }
+        }
+
+        stage('Code Scan') {
+            steps {
+                sh "trivy fs --format table -o maven_dependency.html ."
+            }
+        }
+
+        stage('Unit Test') {
+            steps {
+                sh 'mvn clean'
+                sh 'mvn compile'
+            }
+        }
+
+        stage('SonarQube Scan') {
+            steps {
+                withSonarQubeEnv(credentialsId: "${SONAQUBE_CRED}", installationName: "${SONAQUBE_INSTALLATION}") {
+                    sh '''
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectName=${APP_NAME} \
+                        -Dsonar.projectKey=${APP_NAME} \
+                        -Dsonar.java.binaries=.
+                    '''
+                }
+            }
+        }
+    }
+}
