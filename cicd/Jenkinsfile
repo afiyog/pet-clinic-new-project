@@ -11,7 +11,7 @@ pipeline {
         IMAGE_ECR_REPO = '737465025187.dkr.ecr.us-east-1.amazonaws.com/jenkins-ci'
         ECR_REPO = '737465025187.dkr.ecr.us-east-1.amazonaws.com'
         BRANCH_NAME = 'main'
-        GIT_CRED = 'new-Github-creds'
+        GIT_CRED = 'git-cred'
         GIT_PROJECT_URL = 'https://github.com/afiyog/pet-clinic-java.git'
         SONAQUBE_CRED = 'sonar-cred'
         SONAQUBE_INSTALLATION = 'sonar'
