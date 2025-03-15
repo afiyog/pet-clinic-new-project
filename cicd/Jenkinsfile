@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     tools {
-        maven 'M2_HOME'  // /opt/maven
-        jdk 'JAVA_HOME'
+        maven 'Maven-3.8.1'  // Ensure this matches the tool name in Jenkins
+        jdk 'OpenJDK-11'  // Ensure this matches the tool name in Jenkins
     }
 
     environment {
@@ -16,15 +16,14 @@ pipeline {
         SONAQUBE_CRED = 'sonar-cred'
         SONAQUBE_INSTALLATION = 'sonar'
         APP_NAME = 'pet-clinic-java'
-        SCANNER_HOME = tool 'sonar-env'
     }
 
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: "${BRANCH_NAME}", 
-                    credentialsId: "${GIT_CRED}", 
-                    url: "${GIT_PROJECT_URL}"
+                git branch: BRANCH_NAME, 
+                    credentialsId: GIT_CRED, 
+                    url: GIT_PROJECT_URL
             }
         }
 
@@ -36,20 +35,23 @@ pipeline {
 
         stage('Unit Test') {
             steps {
-                sh 'mvn clean'
-                sh 'mvn compile'
+                sh 'mvn clean compile'
             }
         }
 
         stage('SonarQube Scan') {
             steps {
-                withSonarQubeEnv(credentialsId: "${SONAQUBE_CRED}", installationName: "${SONAQUBE_INSTALLATION}") {
-                    sh '''
-                        $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectName=${APP_NAME} \
-                        -Dsonar.projectKey=${APP_NAME} \
-                        -Dsonar.java.binaries=.
-                    '''
+                script {
+                    def scannerHome = tool 'sonar-env' // Correct way to reference tool
+
+                    withSonarQubeEnv(SONAQUBE_INSTALLATION) {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectName=${APP_NAME} \
+                            -Dsonar.projectKey=${APP_NAME} \
+                            -Dsonar.java.binaries=.
+                        """
+                    }
                 }
             }
         }
